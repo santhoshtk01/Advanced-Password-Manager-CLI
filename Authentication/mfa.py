@@ -4,14 +4,28 @@ import getpass
 
 
 class MultiFactorAuthentication:
-
+    """Contains attributes and methods needed to perform Multi-Factor Authentication."""
     def __init__(self):
         self.totp = None
         self.verified = False
 
     def generateOTP(self):
+        """
+        Do use TOTP to generate OTP. And shows a QR code. Scanned by the user with the help of Google
+        Authenticator.
+        Maximum of 3 OTP attempts allowed. If exceeds the system will exit.
+        """
         def verifyOTP(attemptCount: int):
-            # Verify the otp
+            """
+            Do verify the OTP entered by the user. Logs in a successful attempt. After three unsuccessful attempts
+            system exits.
+
+            Args:
+                attemptCount: Keeps track of the unsuccessful attempts.
+                To calculate failure attempt : 3 - attemptCount.
+            """
+
+            # Verify the otp and set verified=True
             otp = getpass.getpass("Enter the OTP: ")
             if self.totp.verify(otp):
                 print("OTP Verification Successful..")

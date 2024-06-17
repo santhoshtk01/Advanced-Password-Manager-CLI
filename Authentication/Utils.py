@@ -4,20 +4,33 @@ from typing import Tuple
 from Authentication import cursor
 from Authentication.Exceptions import UsernameAlreadyExist
 from Authentication.mfa import MultiFactorAuthentication
+from Authentication.user import UserInformation
 
 
-class AuthenticationUtilities:
+class AuthenticationUtilities(UserInformation):
+    """
+    Contains attributes and methods need to support the Authentication Process.
+    Methods:
+        verify(self) -> None
+        Do check if the username entered by the user already exist.
 
+        checkPassword(self) -> Tuple[bool, str]
+        Do check if the password meets the standards or not.
+
+        multiFactorAuthentication(self) -> None
+        Do perform multi-factor authentication.
+    """
     def __init__(self, username: str, password: str, gmail: str):
-        self.username = username
-        self.password = password
-        self.gmail = gmail
+        super().__init__(username, password, gmail)
         self.verificationSuccessful = False
 
     def verify(self) -> bool:
         """
-        Ensures that the `username` doesn't exist already and the password
-        in our context that the master-password meets the standards.
+        Ensures that the `username` doesn't exist already.
+        Returns:
+            bool: True if the username doesn't already exist.
+        Raises:
+            UsernameAlreadyExist: If the username already exist in the DB.
         """
         query = "SELECT username FROM userCredentials;"
         cursor.execute(query)
@@ -33,7 +46,11 @@ class AuthenticationUtilities:
         return True
 
     def checkPassword(self) -> Tuple[bool, str]:
-        """Check if the password meets the standards or not."""
+        """
+        Check if the password meets the standards or not.
+        Returns:
+            Tuple[bool, str]: False,  meaning full message if it doesn't meet the standards.
+        """
         if len(self.password) < 8:
             return False, "The password length should be minimum of 8 characters."
 
@@ -51,7 +68,9 @@ class AuthenticationUtilities:
 
         return True, "Meets all the requirements."
 
-    def startMFA(self):
+    def multiFactorAuthentication(self):
+        """Do Perform multifactor authentication and set verficationSuccessful=True."""
+
         # Check if the username already exist or not.
         try:
             self.verify()
@@ -62,6 +81,8 @@ class AuthenticationUtilities:
         # Check if the password meets the requirements.
         output = self.checkPassword()
         if output[0]:
+
+            # Create an instance of the mfa and start.
             mfa = MultiFactorAuthentication()
             mfa.generateOTP()
 
