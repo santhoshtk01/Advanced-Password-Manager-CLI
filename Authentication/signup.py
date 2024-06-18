@@ -1,7 +1,7 @@
 from hashlib import sha512
 
 from Authentication import cursor, commit
-from Authentication.Utils import AuthenticationUtilities
+from Authentication.AuthUtils import AuthenticationUtilities
 from Authentication.user import UserInformation
 
 

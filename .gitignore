@@ -1,0 +1,4 @@
+.venv
+.idea
+./Authentication/users.db
+./Authentication/__pychache__/

@@ -1,7 +1,7 @@
 from hashlib import sha512
 
 from Authentication import cursor
-from Authentication.Utils import MultiFactorAuthentication
+from Authentication.AuthUtils import MultiFactorAuthentication
 from Authentication.user import UserInformation
 
 
