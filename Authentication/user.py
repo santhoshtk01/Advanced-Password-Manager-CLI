@@ -1,3 +1,4 @@
+from Manager import establishConnection, commit
 
 
 class UserInformation:
@@ -12,3 +13,16 @@ class UserInformation:
         self.username = username
         self.password = password
         self.gmail = gmail
+        self.userId = None
+
+    def setAuthenticated(self):
+        password_cursor = establishConnection()
+        query = f"UPDATE loggedInUsers SET authenticated=1 WHERE userId={self.userId};"
+        password_cursor.execute(query)
+        commit()
+
+    def unsetAuthenticated(self):
+        password_cursor = establishConnection()
+        query = f"UPDATE loggedInUsers SET authenticated=0 WHERE userId={self.userId};"
+        password_cursor.execute(query)
+        commit()

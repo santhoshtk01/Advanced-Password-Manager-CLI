@@ -35,7 +35,7 @@ class UserLogin(UserInformation):
     def login(self):
         """Fetch the `password` and `gmail` of the corresponding user and assign the attributes.
         If username doesn't exist the program exit."""
-        query = f"SELECT password, gmail FROM userCredentials WHERE username='{self.username}'"
+        query = f"SELECT userId, password, gmail FROM userCredentials WHERE username='{self.username}'"
         cursor.execute(query)
 
         # Fetch details of the users.
@@ -44,8 +44,9 @@ class UserLogin(UserInformation):
             print("Username doesn't exist. Please create your account..")
             exit(-1)
         else:
-            self.gmail = output[1]
-            self.__actualPassword = output[0]
+            self.gmail = output[2]
+            self.__actualPassword = output[1]
+            self.userId = output[0]
 
     def __verifyPassword(self) -> bool:
         """Do compare the actualPassword against the enteredPassword."""
@@ -59,16 +60,16 @@ class UserLogin(UserInformation):
     def multiFactorAuthentication(self):
         """Perform MFA and ensure the verification of the password and MFA. If wrong information entered program
         exit."""
-        mfa = MultiFactorAuthentication()
+        mfa = MultiFactorAuthentication(self.username)
         self.login()
 
         if self.__verifyPassword():
-            mfa.generateOTP()
+            mfa.verifyOTP()
 
             if mfa.verified:
                 print("User logged in successfully..")
                 self.authenticated = True
-                # TODO : Set the authenticated column=True in users passwords field.
+                self.setAuthenticated()
             else:
                 exit(-1)
         else:
@@ -76,7 +77,8 @@ class UserLogin(UserInformation):
 
 
 if __name__ == "__main__":
-    ul = UserLogin("kumargnanam", "Santhosh123#$")
+    ul = UserLogin("myname2", "Santhosh123#$")
     ul.multiFactorAuthentication()
+    ul.unsetAuthenticated()
 
 # TODO : Setup unittest.

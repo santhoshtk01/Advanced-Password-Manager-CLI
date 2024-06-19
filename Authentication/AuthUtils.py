@@ -80,11 +80,11 @@ class AuthenticationUtilities(UserInformation):
 
         # Check if the password meets the requirements.
         output = self.checkPassword()
-        if output[0]:
 
+        if output[0]:
             # Create an instance of the mfa and start.
-            mfa = MultiFactorAuthentication()
-            mfa.generateOTP()
+            mfa = MultiFactorAuthentication(self.username)
+            mfa.generateQR()
 
             if mfa.verified:
                 self.verificationSuccessful = True

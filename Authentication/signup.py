@@ -1,8 +1,10 @@
 from hashlib import sha512
+from cryptography.fernet import Fernet
 
 from Authentication import cursor, commit
 from Authentication.AuthUtils import AuthenticationUtilities
 from Authentication.user import UserInformation
+from Manager import establishConnection, commit as password_commit
 
 
 class UserSignup(UserInformation):
@@ -47,11 +49,20 @@ class UserSignup(UserInformation):
                      "userCredentials(username, gmail, password)" +
                      f"VALUES('{self.username}', '{self.gmail}', '{hashed_password}');")
             cursor.execute(query)
+
+            # Add a new record to the `loggedInUsers` table in the `usersPasswords.db`.
+            self.userId = cursor.execute(f"SELECT userId FROM userCredentials WHERE username='{self.username}';")
+            self.userId = self.userId.fetchone()[0]
+            password_cursor = establishConnection()
+            query = "INSERT INTO loggedInUsers(userId, username, encryptionKey)VALUES(?, ?, ?);"
+            password_cursor.execute(query, (self.userId, self.username, Fernet.generate_key()))
             commit()
+            password_commit()
+
         else:
             print("There a problem with creating your account.")
 
 
 if __name__ == '__main__':
-    usp = UserSignup("sandy", "Santhosh123#$", "santhoshofficial.py@gmail.com")
+    usp = UserSignup("sandy1", "Santhosh123#$", "santhoshofficial.py@gmail.com")
     usp.createAccount()

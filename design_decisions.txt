@@ -1,0 +1,11 @@
+Problem : Ensuring the safe communication between the client and password manager after login.
+    After successful authentication we'll create the instance of the password manager. But a potential vulnerability is
+    just with the userID anyone can access the users password and information.
+
+    Solution : Added a `authenticated` attribute which will be set True if the authentication is successful to all
+    the passwords corresponding to the user.
+
+        Problem : What if the user has 10000 password we have to set 10000 passwords authenticated=True and False
+        after logged out leads to more read and write operations.
+
+Problem : Anyone can store password with just the userID.
