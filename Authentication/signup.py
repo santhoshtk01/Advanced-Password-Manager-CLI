@@ -2,9 +2,9 @@ from hashlib import sha512
 from cryptography.fernet import Fernet
 
 from Authentication import cursor, commit
-from Authentication.AuthUtils import AuthenticationUtilities
 from Authentication.user import UserInformation
 from Manager import establishConnection, commit as password_commit
+from Authentication.mfa import SignUpMFA
 
 
 class UserSignup(UserInformation):
@@ -39,11 +39,12 @@ class UserSignup(UserInformation):
         """
 
         # Creating the instance of the Auth utilities and starting the MFA.
-        auth = AuthenticationUtilities(self.username, self.password, self.gmail)
-        auth.multiFactorAuthentication()
+        if not self.verify():
+            print("Username already exist.")
+            exit(-1)
 
         # Creates a new record in the DB after MFA verification.
-        if auth.verificationSuccessful and self.gmailVerified:
+        if self.multiFactorAuthentication() and self.gmailVerified:
             hashed_password = sha512(self.password.encode()).hexdigest()
             query = ("INSERT INTO "
                      "userCredentials(username, gmail, password)" +
@@ -61,6 +62,34 @@ class UserSignup(UserInformation):
 
         else:
             print("There a problem with creating your account.")
+
+    def verify(self) -> bool:
+        """
+        Ensures that the `username` doesn't exist already.
+        Returns:
+            bool: True if the username doesn't already exist.
+        Raises:
+            UsernameAlreadyExist: If the username already exist in the DB.
+        """
+        query = "SELECT username FROM userCredentials;"
+        cursor.execute(query)
+
+        # Fetch all the usernames and check already exist.
+        output = []
+        for value in cursor.fetchall():
+            output.append(value[0])
+
+        if self.username in output:
+            return False
+
+        return True
+
+    def multiFactorAuthentication(self) -> bool:
+        signupMFA = SignUpMFA(self.username)
+        signupMFA.generateQR()
+        signupMFA.verifyOTP(input("Enter OTP for Signup : "))
+
+        return signupMFA.verified
 
 
 if __name__ == '__main__':

@@ -1,5 +1,7 @@
 import sqlite3
 
+DBPATH = "/home/santhoshtk/Music/Advanced-Password-Manager-CLI/Authentication/users.db"
+
 cursor = None
 connection = None
 
@@ -26,7 +28,7 @@ def establishConnection() -> sqlite3.Cursor:
 
     if cursor is None:
         try:
-            connection = sqlite3.connect("/home/santhoshtk/Music/Advanced-Password-Manager-CLI/Authentication/users.db")
+            connection = sqlite3.connect(DBPATH)
             print("Database connection successful..")
             cursor = connection.cursor()
             createSchema()

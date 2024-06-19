@@ -7,5 +7,3 @@ Problem : Ensuring the safe communication between the client and password manage
 
         Problem : What if the user has 10000 password we have to set 10000 passwords authenticated=True and False
         after logged out leads to more read and write operations.
-
-Problem : Anyone can store password with just the userID.

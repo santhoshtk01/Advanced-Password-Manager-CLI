@@ -1,7 +1,7 @@
 from hashlib import sha512
 
 from Authentication import cursor
-from Authentication.AuthUtils import MultiFactorAuthentication
+from Authentication.mfa import LoginMFA
 from Authentication.user import UserInformation
 
 
@@ -60,13 +60,12 @@ class UserLogin(UserInformation):
     def multiFactorAuthentication(self):
         """Perform MFA and ensure the verification of the password and MFA. If wrong information entered program
         exit."""
-        mfa = MultiFactorAuthentication(self.username)
+        loginMFA = LoginMFA(self.username)
         self.login()
 
         if self.__verifyPassword():
-            mfa.verifyOTP()
-
-            if mfa.verified:
+            loginMFA.verifyOTP(input("Enter OTP : "))
+            if loginMFA.verified:
                 print("User logged in successfully..")
                 self.authenticated = True
                 self.setAuthenticated()
@@ -77,8 +76,9 @@ class UserLogin(UserInformation):
 
 
 if __name__ == "__main__":
-    ul = UserLogin("myname2", "Santhosh123#$")
+    ul = UserLogin("santhoshtk01", "Santhosh0011@")
     ul.multiFactorAuthentication()
+    print(ul.authenticated)
     ul.unsetAuthenticated()
 
 # TODO : Setup unittest.

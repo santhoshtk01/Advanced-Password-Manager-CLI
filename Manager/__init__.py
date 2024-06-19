@@ -1,5 +1,7 @@
 import sqlite3
 
+DBPATH = "/home/santhoshtk/Music/Advanced-Password-Manager-CLI/Manager/userPasswords.db"
+
 cursor = None
 connection = None
 
@@ -44,7 +46,7 @@ def establishConnection() -> sqlite3.Cursor:
     if cursor is None:
         # Establish a new connection with the Database
         try:
-            connection = sqlite3.connect("/home/santhoshtk/Music/Advanced-Password-Manager-CLI/Manager/userPasswords.db")
+            connection = sqlite3.connect(DBPATH)
             cursor = connection.cursor()
             createSchema()
         except Exception as error:
