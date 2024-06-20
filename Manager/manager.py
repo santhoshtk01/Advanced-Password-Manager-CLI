@@ -45,6 +45,7 @@ class StorePassword(PasswordManager):
                  f"VALUES(?, ?, ?, ?, ?, ?);")
         cursor.execute(query, (self.website, self.username, self.password, self.description, self.url, self.userId))
         commit()
+        print("Password stored successfully.")
 
     def encryptPassword(self):
         cipherManager = CipherManager(self.key, self.password)
@@ -143,8 +144,12 @@ class RetrievePassword(PasswordManager):
 
 
 if __name__ == '__main__':
-    rp = RetrievePassword(userId=4)
-    rp.search("x")
-    print(rp.password)
+    with open("/home/santhoshtk/Music/Advanced-Password-Manager-CLI/DataBreachTestData/10-million-password-list-top"
+              "-10000.txt", mode="r") as file:
+        output = file.readlines()
+
+    for password in output[1:]:
+        sp = StorePassword("www.dummy.com", "dummy", password, "dummy-desc", "dummy-url", 1)
+        sp.storeNewPassword()
 
 

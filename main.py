@@ -25,7 +25,7 @@ def start():
             password = input("Password : ")
             description = input("Description : ")
             url = input("URL : ")
-            sp = StorePassword(website, username, password, description, url, 4)
+            sp = StorePassword(website, username, password, description, url, 1)
             sp.storeNewPassword()
 
 

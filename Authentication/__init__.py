@@ -28,7 +28,7 @@ def establishConnection() -> sqlite3.Cursor:
 
     if cursor is None:
         try:
-            connection = sqlite3.connect(DBPATH)
+            connection = sqlite3.connect(DBPATH, check_same_thread=False)
             print("Database connection successful..")
             cursor = connection.cursor()
             createSchema()

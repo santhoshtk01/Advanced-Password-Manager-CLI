@@ -59,7 +59,7 @@ class UserSignup(UserInformation):
             password_cursor.execute(query, (self.userId, self.username, Fernet.generate_key()))
             commit()
             password_commit()
-
+            print("Account created successfully.")
         else:
             print("There a problem with creating your account.")
 

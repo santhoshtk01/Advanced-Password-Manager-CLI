@@ -16,6 +16,7 @@ def createSchema():
         "password BLOB NOT NULL,"
         "description VARCHAR(150),"
         "url TEXT,"
+        "breached INTEGER NOT NULL DEFAULT 0,"
         "userId INTEGER);"
     )
     cursor.execute(query)
@@ -46,7 +47,7 @@ def establishConnection() -> sqlite3.Cursor:
     if cursor is None:
         # Establish a new connection with the Database
         try:
-            connection = sqlite3.connect(DBPATH)
+            connection = sqlite3.connect(DBPATH, check_same_thread=False)
             cursor = connection.cursor()
             createSchema()
         except Exception as error:
