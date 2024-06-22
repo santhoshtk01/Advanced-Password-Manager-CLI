@@ -1,4 +1,10 @@
 .venv
 .idea
-./Authentication/users.db
-./Authentication/__pychache__/
+Authentication/users.db
+Authentication/__pycache__/
+Manager/userPasswords.db
+Manager/__pycache__/
+__pycache__/
+StrengthAnalyzer/RFCModel.pkl
+StrengthAnalyzer/data.csv
+DataBreachTestData/10-million-password-list-top-10000.txt
