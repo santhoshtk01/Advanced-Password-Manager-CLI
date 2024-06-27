@@ -22,11 +22,13 @@ def createSchema():
     cursor.execute(query)
 
     # Query to maintain authenticated users.
-    query = ("CREATE TABLE IF NOT EXISTS loggedInUsers("
-             "userId INTEGER PRIMARY KEY,"
-             "username TEXT NOT NULL,"
-             "authenticated INTEGER NOT NULL DEFAULT 0,"
-             "encryptionKey BLOB NOT NULL);")
+    query = (
+        "CREATE TABLE IF NOT EXISTS loggedInUsers("
+        "userId INTEGER PRIMARY KEY,"
+        "username TEXT NOT NULL,"
+        "authenticated INTEGER NOT NULL DEFAULT 0,"
+        "encryptionKey BLOB NOT NULL);"
+    )
     cursor.execute(query)
 
     # Query for password change history table.

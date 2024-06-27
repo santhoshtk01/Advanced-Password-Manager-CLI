@@ -1,8 +1,9 @@
-import pyotp
-import qrcode
 import string
 
-from Authentication import cursor, commit
+import pyotp
+import qrcode
+
+from Authentication import commit, cursor
 
 
 class MFAInformation:
@@ -55,7 +56,5 @@ class SignUpMFA(MultiFactorAuthentication):
 
 
 class LoginMFA(MultiFactorAuthentication):
-
     def __init__(self, username: str) -> None:
         super().__init__(username)
-

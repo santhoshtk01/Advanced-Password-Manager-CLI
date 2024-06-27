@@ -1,14 +1,21 @@
-from Manager import cursor, commit
-from Manager import establishConnection as passwordConnection
-from Manager.cipherManager import CipherManager
+import datetime
 from typing import Tuple
 
-import datetime
+from Manager import commit, cursor
+from Manager import establishConnection as passwordConnection
+from Manager.cipherManager import CipherManager
 
 
 class PasswordManager:
-
-    def __init__(self, website: str, username: str, password: str, description: str, url: str, userId: int) -> None:
+    def __init__(
+        self,
+        website: str,
+        username: str,
+        password: str,
+        description: str,
+        url: str,
+        userId: int,
+    ) -> None:
         self.website = website
         self.username = username
         self.password = password
@@ -29,22 +36,43 @@ class PasswordManager:
 
 
 class StorePassword(PasswordManager):
-
-    def __init__(self, website: str, username: str, password: str, description: str, url: str, userId: int) -> None:
+    def __init__(
+        self,
+        website: str,
+        username: str,
+        password: str,
+        description: str,
+        url: str,
+        userId: int,
+    ) -> None:
         super().__init__(website, username, password, description, url, userId)
         self.checkAuthentication()
 
     def storeNewPassword(self) -> str:
         if self.authenticated:
             # Fetch the encryption key from the database
-            self.key = cursor.execute(f"SELECT encryptionKey FROM loggedInUsers WHERE userId={self.userId};")
+            self.key = cursor.execute(
+                f"SELECT encryptionKey FROM loggedInUsers WHERE userId={self.userId};"
+            )
             self.key = self.key.fetchone()[0]
 
             # Encrypt the password before storing it.
             self.encryptPassword()
-            query = (f"INSERT INTO passwords(website_name, username, password, description, url, userId)"
-                     f"VALUES(?, ?, ?, ?, ?, ?);")
-            cursor.execute(query, (self.website, self.username, self.password, self.description, self.url, self.userId))
+            query = (
+                f"INSERT INTO passwords(website_name, username, password, description, url, userId)"
+                f"VALUES(?, ?, ?, ?, ?, ?);"
+            )
+            cursor.execute(
+                query,
+                (
+                    self.website,
+                    self.username,
+                    self.password,
+                    self.description,
+                    self.url,
+                    self.userId,
+                ),
+            )
             commit()
 
             return "Password Stored Successfully."
@@ -57,7 +85,6 @@ class StorePassword(PasswordManager):
 
 
 class UpdateInformation:
-
     def __init__(self, passwordId: int):
         self.passwordId = passwordId
 
@@ -83,14 +110,15 @@ class UpdateInformation:
         return "Description updated successfully."
 
     def updateURL(self, newURL: str) -> str:
-        query = f"UPDATE passwords SET url='{newURL}' WHERE password_id={self.passwordId};"
+        query = (
+            f"UPDATE passwords SET url='{newURL}' WHERE password_id={self.passwordId};"
+        )
         cursor.execute(query)
         commit()
 
         return "URL updated successfully."
 
     def updatePassword(self, newPassword: str) -> str:
-
         # Fetch the old password from the DB.
         query = f"SELECT password FROM passwords WHERE password_id={self.passwordId};"
         cursor.execute(query)
@@ -105,8 +133,10 @@ class UpdateInformation:
         today = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%y %H:%M:%S")
 
         # Create a new entry in the change history table.
-        query = (f"INSERT INTO changeHistory(password_id, date_changed, password)"
-                 f"VALUES({self.passwordId}, '{today}', '{oldPassword}')")
+        query = (
+            f"INSERT INTO changeHistory(password_id, date_changed, password)"
+            f"VALUES({self.passwordId}, '{today}', '{oldPassword}')"
+        )
         cursor.execute(query)
         commit()
 
@@ -119,7 +149,9 @@ class RetrievePassword(PasswordManager):
 
     def decryptPassword(self):
         # Fetch the encryption key from the database
-        self.key = cursor.execute(f"SELECT encryptionKey FROM loggedInUsers WHERE userId={self.userId};")
+        self.key = cursor.execute(
+            f"SELECT encryptionKey FROM loggedInUsers WHERE userId={self.userId};"
+        )
         self.key = self.key.fetchone()[0]
 
         cipher_manager = CipherManager(self.key, self.password)
@@ -151,8 +183,7 @@ class RetrievePassword(PasswordManager):
         return False, "User Not Logged Into the System."
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     rp = RetrievePassword(1)
     rp.search("", "22z433")
     print(rp.password)
-

@@ -1,9 +1,11 @@
-import requests
 import hashlib
 import random
-import string
 import re
+import string
 from typing import Tuple
+
+import requests
+
 from Manager import establishConnection
 
 
@@ -25,7 +27,7 @@ def checkPassword(password: str) -> Tuple[bool, str]:
     if re.search(r"\d", password) is None:
         return False, "The password should contain atleast one digit."
 
-    if re.search(r'^.*?[\W].*?$', password) is None:
+    if re.search(r"^.*?[\W].*?$", password) is None:
         return False, "The password should contain atleast one special character."
 
     return True, "Meets all the requirements."
@@ -39,7 +41,12 @@ def generatePassword(length: int = 8, specialChars: bool = True) -> str:
         specialChars: Indicates whether to include the special characters or not.
     Returns: Generated password as `str`.
     """
-    values = [string.ascii_lowercase, string.ascii_uppercase, string.digits, string.punctuation]
+    values = [
+        string.ascii_lowercase,
+        string.ascii_uppercase,
+        string.digits,
+        string.punctuation,
+    ]
     output = ""
 
     # Check if the user needs special chars or not.
@@ -57,14 +64,17 @@ def generatePassword(length: int = 8, specialChars: bool = True) -> str:
 def checkExpose(password: str, password_id: int) -> None:
     # Convert the password into sha1
     sha1 = hashlib.sha1(password.encode()).hexdigest()
-    proxyServers = ["http://139.224.117.52", "http://103.120.133.141", "http://190.61.47.78",
-                    "http://115.159.65.66", "http://135.125.56.179"]
+    proxyServers = [
+        "http://139.224.117.52",
+        "http://103.120.133.141",
+        "http://190.61.47.78",
+        "http://115.159.65.66",
+        "http://135.125.56.179",
+    ]
 
     # Make a request and check.
     url = f"https://api.pwnedpasswords.com/range/{sha1.upper()[:5]}"
-    proxy = {
-        "http": random.choice(proxyServers)
-    }
+    proxy = {"http": random.choice(proxyServers)}
     try:
         response = requests.get(url, proxies=proxy)
         hashes = [value.split(":") for value in response.text.splitlines()]
@@ -73,10 +83,11 @@ def checkExpose(password: str, password_id: int) -> None:
         for exposed, count in hashes:
             if sha1.upper()[5:] == exposed:
                 passwordCursor = establishConnection()
-                passwordCursor.execute(f"UPDATE passwords SET breached=1 WHERE password_id={password_id};")
+                passwordCursor.execute(
+                    f"UPDATE passwords SET breached=1 WHERE password_id={password_id};"
+                )
                 print("Breached..")
                 break
         print("Safe Password..")
     except Exception as error:
         print(error)
-

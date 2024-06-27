@@ -1,8 +1,7 @@
-from Manager import establishConnection, commit
+from Manager import commit, establishConnection
 
 
 class UserInformation:
-
     def __init__(self, username: str, password: str, gmail: str) -> None:
         """
         Args:

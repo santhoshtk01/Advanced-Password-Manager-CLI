@@ -1,9 +1,11 @@
 from typing import Union
+
 from cryptography.fernet import Fernet
 
 
 class CipherManager:
     """Performs encryption and decryption of the passwords."""
+
     def __init__(self, key: bytes, password: Union[str, bytes]) -> None:
         """
         Args:

@@ -1,10 +1,10 @@
+import hashlib
+import threading
+
 from Authentication import establishConnection
 from Manager import establishConnection as managerConnection
 from Manager.cipherManager import CipherManager
 from utilities import checkExpose
-
-import hashlib
-import threading
 
 
 class BreachMonitor:
@@ -22,10 +22,13 @@ class BreachMonitor:
 
     def __getInformationFromDB(self):
         self.passwordCursor = managerConnection()
-        self.passwords = self.passwordCursor.execute(f"SELECT password_id, website_name, username, password "
-                                                     f"FROM passwords WHERE userId={self.userId};").fetchmany(3339)
-        self.key = self.passwordCursor.execute(f"SELECT encryptionKey FROM loggedInUsers "
-                                               f"WHERE userId={self.userId};").fetchone()[0]
+        self.passwords = self.passwordCursor.execute(
+            f"SELECT password_id, website_name, username, password "
+            f"FROM passwords WHERE userId={self.userId};"
+        ).fetchmany(3339)
+        self.key = self.passwordCursor.execute(
+            f"SELECT encryptionKey FROM loggedInUsers " f"WHERE userId={self.userId};"
+        ).fetchone()[0]
 
     def checkForBreach(self):
         for information in self.passwords:
@@ -33,7 +36,9 @@ class BreachMonitor:
             password = CipherManager(self.key, password).decrypt()
 
             # Create a new thread for each password.
-            newThread = threading.Thread(target=checkExpose, args=(self.getSha1(password), passwordId))
+            newThread = threading.Thread(
+                target=checkExpose, args=(self.getSha1(password), passwordId)
+            )
             newThread.start()
             newThread.join()
 
@@ -48,5 +53,5 @@ def startMonitoring():
         print(breachMonitor.checkForBreach())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
