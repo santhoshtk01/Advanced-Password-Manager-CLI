@@ -1,4 +1,0 @@
-1. Performing MFA for login and signup in different classes.
-    DO : Create a dedicated class for MFA and perform login and signup using the same class.
-    Since, It's coupled with the another modules handle it carefully during refactoring.
-

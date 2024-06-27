@@ -14,6 +14,7 @@ class UserInformation:
         self.password = password
         self.gmail = gmail
         self.userId = None
+        self.mfaCompleted = False
 
     def setAuthenticated(self):
         password_cursor = establishConnection()

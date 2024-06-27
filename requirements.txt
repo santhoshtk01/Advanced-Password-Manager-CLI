@@ -2,3 +2,6 @@ pyotp~=2.9.0
 cryptography~=42.0.8
 qrcode~=3.0
 requests~=2.32.3
+fastapi~=0.111.0
+pandas~=2.2.2
+scikit-learn~=1.5.0

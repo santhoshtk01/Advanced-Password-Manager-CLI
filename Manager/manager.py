@@ -1,6 +1,7 @@
 from Manager import cursor, commit
 from Manager import establishConnection as passwordConnection
 from Manager.cipherManager import CipherManager
+from typing import Tuple
 
 import datetime
 
@@ -15,7 +16,7 @@ class PasswordManager:
         self.url = url
         self.userId = userId
         self.key = None
-        self.__authenticated = False
+        self.authenticated = False
 
     def checkAuthentication(self):
         password_cursor = passwordConnection()
@@ -24,7 +25,7 @@ class PasswordManager:
 
         # Check the authenticated column and set.
         if password_cursor.fetchone()[0] == 1:
-            self.__authenticated = True
+            self.authenticated = True
 
 
 class StorePassword(PasswordManager):
@@ -33,19 +34,22 @@ class StorePassword(PasswordManager):
         super().__init__(website, username, password, description, url, userId)
         self.checkAuthentication()
 
-    def storeNewPassword(self) -> None:
+    def storeNewPassword(self) -> str:
+        if self.authenticated:
+            # Fetch the encryption key from the database
+            self.key = cursor.execute(f"SELECT encryptionKey FROM loggedInUsers WHERE userId={self.userId};")
+            self.key = self.key.fetchone()[0]
 
-        # Fetch the encryption key from the database
-        self.key = cursor.execute(f"SELECT encryptionKey FROM loggedInUsers WHERE userId={self.userId};")
-        self.key = self.key.fetchone()[0]
+            # Encrypt the password before storing it.
+            self.encryptPassword()
+            query = (f"INSERT INTO passwords(website_name, username, password, description, url, userId)"
+                     f"VALUES(?, ?, ?, ?, ?, ?);")
+            cursor.execute(query, (self.website, self.username, self.password, self.description, self.url, self.userId))
+            commit()
 
-        # Encrypt the password before storing it.
-        self.encryptPassword()
-        query = (f"INSERT INTO passwords(website_name, username, password, description, url, userId)"
-                 f"VALUES(?, ?, ?, ?, ?, ?);")
-        cursor.execute(query, (self.website, self.username, self.password, self.description, self.url, self.userId))
-        commit()
-        print("Password stored successfully.")
+            return "Password Stored Successfully."
+
+        return "User not logged in to the system."
 
     def encryptPassword(self):
         cipherManager = CipherManager(self.key, self.password)
@@ -121,35 +125,34 @@ class RetrievePassword(PasswordManager):
         cipher_manager = CipherManager(self.key, self.password)
         self.password = cipher_manager.decrypt()
 
-    def search(self, website: str = "", username: str = "") -> None:
+    def search(self, website: str = "", username: str = "") -> Tuple[bool, str]:
+        self.checkAuthentication()
+        if self.authenticated:
+            # Check which is used for searching
+            if website:
+                searchKey = website
+            else:
+                searchKey = username
 
-        # Check which is used for searching
-        if website:
-            searchKey = website
-        else:
-            searchKey = username
+            query = f"SELECT * FROM passwords WHERE username='{searchKey}';"
+            cursor.execute(query)
+            outputs = cursor.fetchone()
 
-        query = f"SELECT * FROM passwords WHERE website_name='{searchKey}';"
-        cursor.execute(query)
-        outputs = cursor.fetchone()
+            # Assign all the attributes.
+            self.website = outputs[1]
+            self.username = outputs[2]
+            self.password = outputs[3]
+            self.description = outputs[4]
+            self.url = outputs[5]
 
-        # Assign all the attributes.
-        self.website = outputs[1]
-        self.username = outputs[2]
-        self.password = outputs[3]
-        self.description = outputs[4]
-        self.url = outputs[5]
+            self.decryptPassword()
+            return True, "User Authenticated."
 
-        self.decryptPassword()
+        return False, "User Not Logged Into the System."
 
 
 if __name__ == '__main__':
-    with open("/home/santhoshtk/Music/Advanced-Password-Manager-CLI/DataBreachTestData/10-million-password-list-top"
-              "-10000.txt", mode="r") as file:
-        output = file.readlines()
-
-    for password in output[1:]:
-        sp = StorePassword("www.dummy.com", "dummy", password, "dummy-desc", "dummy-url", 1)
-        sp.storeNewPassword()
-
+    rp = RetrievePassword(1)
+    rp.search("", "22z433")
+    print(rp.password)
 

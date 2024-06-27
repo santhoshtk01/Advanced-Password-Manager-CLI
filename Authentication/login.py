@@ -1,7 +1,7 @@
 from hashlib import sha512
+from typing import Tuple
 
 from Authentication import cursor
-from Authentication.mfa import LoginMFA
 from Authentication.user import UserInformation
 
 
@@ -12,11 +12,8 @@ class UserLogin(UserInformation):
         login(self) -> None
         Fetch the password and gmail from the database of the corresponding `username`.
 
-        __verifyPassword(self) -> bool
+        verifyPassword(self) -> bool
         Do check the `password` from the DB against the user entered password.
-
-        multiFactorAuthentication(self) -> None
-        Do create QR code for OTP and verify it with the help of `Google authenticator`.
     """
 
     def __init__(self, username: str, password: str) -> None:
@@ -32,53 +29,26 @@ class UserLogin(UserInformation):
         self.__actualPassword = None
         self.authenticated = False
 
-    def login(self):
-        """Fetch the `password` and `gmail` of the corresponding user and assign the attributes.
-        If username doesn't exist the program exit."""
-        query = f"SELECT userId, password, gmail FROM userCredentials WHERE username='{self.username}'"
+    def login(self) -> Tuple[bool, str]:
+        """Fetch the `password` and `gmail` of the corresponding user and assign the attributes."""
+        query = f"SELECT userId, password, gmail FROM userCredentials WHERE username='{self.username}';"
         cursor.execute(query)
 
         # Fetch details of the users.
         output = cursor.fetchone()
         if output is None:
-            print("Username doesn't exist. Please create your account..")
-            exit(-1)
+            return False, "User Doesn't exist create your account."
         else:
             self.gmail = output[2]
             self.__actualPassword = output[1]
             self.userId = output[0]
 
-    def __verifyPassword(self) -> bool:
+        return True, "Proceed to MFA."
+
+    def verifyPassword(self) -> Tuple[bool, str]:
         """Do compare the actualPassword against the enteredPassword."""
         hashed_password = sha512(self.password.encode()).hexdigest()
         if hashed_password == self.__actualPassword:
-            return True
+            return True, "Password Correct."
         else:
-            print("Password incorrect.")
-            return False
-
-    def multiFactorAuthentication(self):
-        """Perform MFA and ensure the verification of the password and MFA. If wrong information entered program
-        exit."""
-        loginMFA = LoginMFA(self.username)
-        self.login()
-
-        if self.__verifyPassword():
-            loginMFA.verifyOTP(input("Enter OTP : "))
-            if loginMFA.verified:
-                print("User logged in successfully..")
-                self.authenticated = True
-                self.setAuthenticated()
-            else:
-                exit(-1)
-        else:
-            exit(-1)
-
-
-if __name__ == "__main__":
-    ul = UserLogin("santhoshtk01", "Santhosh0011@")
-    ul.multiFactorAuthentication()
-    print(ul.authenticated)
-    ul.unsetAuthenticated()
-
-# TODO : Setup unittest.
+            return False, "Password Incorrect."

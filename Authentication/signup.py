@@ -1,10 +1,10 @@
 from hashlib import sha512
 from cryptography.fernet import Fernet
+from typing import Tuple
 
 from Authentication import cursor, commit
 from Authentication.user import UserInformation
 from Manager import establishConnection, commit as password_commit
-from Authentication.mfa import SignUpMFA
 
 
 class UserSignup(UserInformation):
@@ -30,21 +30,20 @@ class UserSignup(UserInformation):
         # TODO : Implement a mechanism to ensure the gmail exist.
         self.gmailVerified = True
 
-    def createAccount(self) -> None:
+    def createAccount(self) -> Tuple[bool, str]:
         """
         Create a new account for the user with username, password and gmail.
         - Performs password validation.
         - Ensures that username doesn't exist already.
-        - Performs MultiFactor Authentication with Google Authenticator.
+        - Ensures that multifactor authentication is successful.
         """
 
         # Creating the instance of the Auth utilities and starting the MFA.
         if not self.verify():
-            print("Username already exist.")
-            exit(-1)
+            return False, "Username Already Exist."
 
         # Creates a new record in the DB after MFA verification.
-        if self.multiFactorAuthentication() and self.gmailVerified:
+        if self.mfaCompleted and self.gmailVerified:
             hashed_password = sha512(self.password.encode()).hexdigest()
             query = ("INSERT INTO "
                      "userCredentials(username, gmail, password)" +
@@ -59,9 +58,11 @@ class UserSignup(UserInformation):
             password_cursor.execute(query, (self.userId, self.username, Fernet.generate_key()))
             commit()
             password_commit()
-            print("Account created successfully.")
+
+            return True, "Account Created Successfully."
+
         else:
-            print("There a problem with creating your account.")
+            return False, "There was a problem creating your account."
 
     def verify(self) -> bool:
         """
@@ -83,15 +84,3 @@ class UserSignup(UserInformation):
             return False
 
         return True
-
-    def multiFactorAuthentication(self) -> bool:
-        signupMFA = SignUpMFA(self.username)
-        signupMFA.generateQR()
-        signupMFA.verifyOTP(input("Enter OTP for Signup : "))
-
-        return signupMFA.verified
-
-
-if __name__ == '__main__':
-    usp = UserSignup("sandy1", "Santhosh123#$", "santhoshofficial.py@gmail.com")
-    usp.createAccount()
